@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Shop products{% endblock %}
+{% block content %}
+<section class="hero">
+  <div><p class="eyebrow">EVERYDAY FINDS, MADE SIMPLE</p><h1>Find something<br><span>you’ll love.</span></h1><p class="hero-copy">Discover useful essentials and little upgrades for your day.</p><a class="button button-dark" href="#catalog">Explore products <span aria-hidden="true">→</span></a></div>
+  <div class="hero-art"><div class="hero-circle"></div><div class="hero-label">Thoughtful picks<br>for everyday life</div><div class="hero-spark">✳</div></div>
+</section>
+<section id="catalog" class="section">
+  <div class="section-heading"><div><p class="eyebrow">THE COLLECTION</p><h2>Shop all products</h2></div><span class="muted">{{ products|length }} item(s)</span></div>
+  <form class="filters" method="get" action="{{ url_for('index') }}">
+    <input type="search" name="q" placeholder="Search products..." value="{{ search }}" aria-label="Search products">
+    <select name="category" aria-label="Filter by category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+    <button class="button button-outline" type="submit">Search</button>
+    {% if search or selected_category %}<a class="clear-link" href="{{ url_for('index') }}">Clear</a>{% endif %}
+  </form>
+  {% if products %}
+  <div class="product-grid">
+    {% for product in products %}
+    <article class="product-card">
+      <div class="product-image-wrap">
+        {% if product.image_url %}<img class="product-image" src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">{% else %}<div class="image-placeholder">✳</div>{% endif %}
+        <span class="category-pill">{{ product.category }}</span>
+      </div>
+      <div class="product-info">
+        <h3>{{ product.name }}</h3><p class="product-description">{{ product.description }}</p>
+        <div class="product-bottom"><strong class="price">₹{{ '%.2f'|format(product.price) }}</strong><span class="stock {% if product.stock == 0 %}out{% endif %}">{% if product.stock %}{{ product.stock }} in stock{% else %}Out of stock{% endif %}</span></div>
+        <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="add-form">
+          <label class="sr-only" for="qty-{{ product.id }}">Quantity</label><input id="qty-{{ product.id }}" type="number" name="quantity" min="1" max="99" value="1" {% if not product.stock %}disabled{% endif %}>
+          <button class="button button-dark" type="submit" {% if not product.stock %}disabled{% endif %}>Add to cart</button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}<div class="empty-state"><div class="empty-icon">⌕</div><h3>No products found</h3><p>Try a different search or category.</p><a class="button button-outline" href="{{ url_for('index') }}">View all products</a></div>{% endif %}
+</section>
+{% endblock %}
